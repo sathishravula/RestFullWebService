@@ -1,6 +1,7 @@
 package com.androidexample.restfulwebservice;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,8 +9,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import com.google.gson.Gson;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -26,17 +25,20 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class WebserviceActivity extends Activity {
-  private TextView tv;
+  StringBuilder sb;
+  Intent intent;
+  private Button GetServerData;
   List<String> names =new ArrayList<String>();
+
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.home);
-
-    final Button GetServerData = (Button) findViewById(R.id.getData);
-  tv= (TextView) findViewById(R.id.textView);
+    getWidgets();
     GetServerData.setOnClickListener(action());
+  }
 
-
+  private void getWidgets() {
+    GetServerData = (Button) findViewById(R.id.getData);
   }
 
   private View.OnClickListener action() {
@@ -44,8 +46,7 @@ public class WebserviceActivity extends Activity {
 
       @Override
       public void onClick(View arg0) {
-        Webservice webService = new Webservice();
-        webService.execute();
+        new Webservice().execute();
       }
     };
   }
@@ -62,23 +63,15 @@ public class WebserviceActivity extends Activity {
         urlConnection = (HttpURLConnection) url.openConnection();
         BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
 //        String response = IOUtils.toString(in, "UTF-8");
-
-
-        StringBuilder sb = new StringBuilder();
+       sb= new StringBuilder();
         String line = null;
         // Read Server Response
         while ((line = in.readLine()) != null) {
           // Append server response in string
           sb.append(line + "\n");
-        }
-        /*tv.setText(sb.toString());*/
-        Log.d("webservice", sb.toString());
-        Employee[] employees=new Gson().fromJson(sb.toString(),Employee[].class);
-        for(Employee e:employees)
-            names.add(e.getName());
+         }
 
-          Intent intent=new Intent(Webservice.this,ListActivity.class);
-       // Log.d("webservice1", e.toString());
+        nextActivity();
 
       } catch (Exception e) {
         Log.d("webservice", e.getMessage());
@@ -87,6 +80,25 @@ public class WebserviceActivity extends Activity {
       }
       return true;
     }
+  }
+
+  private void nextActivity() {
+    Bundle bundle=new Bundle();
+    bundle.putSerializable("employees",new EmployeeList(getEmployees()));
+    intent = new Intent(this,  NameListActivity.class);
+    intent.putExtras(bundle);
+    intent.putStringArrayListExtra("names", (ArrayList<String>) names);
+    startActivity(intent);
+  }
+
+  private ArrayList<Employee> getEmployees() {
+    ArrayList<Employee> employees=new ArrayList<Employee>();
+    Employee[] employeeArray=new Gson().fromJson(sb.toString(),Employee[].class);
+    for(Employee e:employeeArray){
+        names.add(e.getName());
+      employees.add(e);
+    }
+    return employees;
   }
 
 }

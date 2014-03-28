@@ -1,5 +1,7 @@
 package com.androidexample.restfulwebservice;
 
+import java.io.Serializable;
+
 /**
  * Created with IntelliJ IDEA.
  * User: ehc
@@ -7,7 +9,7 @@ package com.androidexample.restfulwebservice;
  * Time: 5:45 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Employee {
+public class Employee  implements Serializable{
   public void setName(String name) {
     this.name = name;
   }
